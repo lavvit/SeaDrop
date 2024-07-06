@@ -1,10 +1,13 @@
-﻿using System.Text;
+﻿using System.Reflection;
+using System.Text;
 using static DxLibDLL.DX;
 
 namespace SeaDrop
 {
     public class DXLib
     {
+        public static string AppPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "";
+
         public static int Width, Height;
         public static bool VSync = true, MultiThreading = true;
 
@@ -133,6 +136,7 @@ namespace SeaDrop
             }
 
             Task.Run(Tcp.UpdateServer);
+            Task.Run(Udp.UpdateServer);
         }
 
         public static void End()
@@ -205,6 +209,14 @@ namespace SeaDrop
         public static void SetDrop(bool enable)
         {
             SetDragFileValidFlag(enable ? 1 : 0);
+        }
+
+        public static void Error(object e, string str = "", string errorname = null)
+        {
+            if (!string.IsNullOrEmpty(str)) str += "\n";
+            if (!string.IsNullOrEmpty(errorname)) errorname = " : " + errorname;
+
+            throw new Exception(e.ToString() + str + errorname);
         }
     }
 }

@@ -8,11 +8,11 @@ namespace TestApp
         {
             DXLib.VSync = true;
             DXLib.MultiThreading = true;
-            DXLib.Init(new Program(), 640, 480);
+            DXLib.Init(new NetTest(), 640, 480);
             //1280, 720
-            //
+            //Program
             //Shooting
-            //NetTest
+            //
             //MortorTest
         }
 

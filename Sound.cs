@@ -3,31 +3,14 @@ namespace SeaDrop
 {
     public class Sound : IDisposable
     {
-        public static Dictionary<string, int> IDs = [];
-
-        public static void Load(string path)
-        {
-            if (IDs.ContainsKey(path)) return;
-            IDs.Add(path, LoadSoundMem(path));
-        }
-        public static void Dispose(string path)
-        {
-            if (!IDs.ContainsKey(path)) return;
-            DeleteSoundMem(IDs[path]);
-            IDs.Remove(path);
-        }
-
         public bool Enable;
         public string Path;
+        public int Length;
         public int ID;
 
         public Sound(string path)
         {
-            Path = path;
-            Load(path);
-            ID = -1;
-            IDs.TryGetValue(path, out ID);
-            Enable = ID >= 0;
+            Set(path);
         }
 
         public void Set(string subpath)
@@ -35,10 +18,9 @@ namespace SeaDrop
             if (!Enable)
             {
                 Path = subpath;
-                Load(subpath);
-                ID = -1;
-                IDs.TryGetValue(subpath, out ID);
+                ID = LoadSoundMem(subpath);
                 Enable = ID >= 0;
+                Length = (int)GetSoundTotalTime(ID);
             }
         }
         ~Sound()
@@ -48,7 +30,6 @@ namespace SeaDrop
         public void Dispose()
         {
             Stop();
-            Dispose(Path);
             ID = -1;
             Enable = false;
         }
@@ -173,7 +154,7 @@ namespace SeaDrop
                 catch (Exception) { }
             }
         }
-        public int Length
+        /*public int Length
         {
             get
             {
@@ -187,6 +168,28 @@ namespace SeaDrop
                 }
                 return 0;
             }
+        }*/
+
+        public static int GetLength(string path)
+        {
+            if (!File.Exists(path)) return 0;
+            int id = LoadSoundMem(path);
+            int n = 0;
+            while (n < 100)
+            {
+                int l = (int)GetSoundTotalTime(id);
+                if (l >= 0)
+                {
+                    DeleteSoundMem(id);
+                    return l;
+                }
+                PlaySoundMem(id, DX_PLAYTYPE_BACK);
+                Thread.Sleep(1);
+                StopSoundMem(id);
+                n++;
+            }
+            DeleteSoundMem(id);
+            return 0;
         }
     }
 }
