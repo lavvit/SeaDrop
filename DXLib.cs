@@ -10,12 +10,13 @@ namespace SeaDrop
 
         public static int Width, Height;
         public static bool VSync = true, MultiThreading = true;
+        public static bool Logging = false;
 
         private static bool isEnd, ProgEnd, TEnd;
 
         private static Scene? BaseScene, BaseOld, NowScene, OldScene;
 
-        public static void Init(Scene scene, int width = 640, int height = 480)
+        public static void Init(Scene scene, int width = 640, int height = 480, double scale = 1.0)
         {
 
             //SetFullScreenScalingMode(DX_FSSCALINGMODE_NEAREST); // フルスクリーンモード時の画面の拡大モードを最近点モードに設定
@@ -24,12 +25,15 @@ namespace SeaDrop
             SetWaitVSyncFlag(FALSE); // 垂直同期を無効化
             SetMultiThreadFlag(TRUE);//マルチスレッドを有効化する
             SetAlwaysRunFlag(TRUE); //ソフトがアクティブじゃなくても処理続行するようにする
+            SetDoubleStartValidFlag(TRUE);//複数起動を許可する
+            SetOutApplicationLogValidFlag(Logging ? 1 : 0);
+
             SetUseDxLibWM_PAINTProcess(FALSE);//ウィンドウを掴んでも動くようにするおまじない
             SetUseTSFFlag(TRUE);// ＩＭＥの変換候補表示の処理に TSF を使用するかどうかを設定する
             SetUseIMEFlag(TRUE);// ＩＭＥを使用するかどうかを設定する
 
             SetWindowSizeChangeEnableFlag(TRUE, TRUE);
-            SetSize(width, height);
+            SetSize(width, height, scale);
             if (DxLib_Init() < 0) return; // ＤＸライブラリ初期化処理 エラーが起きたら直ちに終了
 
             if (MultiThreading) BaseScene = scene;

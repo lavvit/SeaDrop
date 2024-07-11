@@ -194,6 +194,19 @@ namespace SeaDrop
         {
             return texture != null && texture.Enable;
         }
+
+        public static (int Width, int Height) GetSize(string path)
+        {
+            if (!File.Exists(path)) return (0, 0);
+            FileStream fs = new FileStream("", FileMode.Open, FileAccess.Read);
+            fs.Seek(16, SeekOrigin.Begin);
+            byte[] buf = new byte[8];
+            fs.Read(buf, 0, 8);
+            fs.Dispose();
+            uint width = ((uint)buf[0] << 24) | ((uint)buf[1] << 16) | ((uint)buf[2] << 8) | (uint)buf[3];
+            uint height = ((uint)buf[4] << 24) | ((uint)buf[5] << 16) | ((uint)buf[6] << 8) | (uint)buf[7];
+            return ((int)width, (int)height);
+        }
     }
 
     public enum BlendMode
