@@ -9,7 +9,7 @@ namespace SeaDrop
     public class Texture : IDisposable
     {
         public bool Enable;
-        public string? Path;
+        public string Path;
         public int ID;
 
         public int Width, Height;
@@ -22,6 +22,8 @@ namespace SeaDrop
         public Color Color = Color.White;
 
         public bool TurnX, TurnY;
+
+        public Texture() { Path = ""; }
 
         /// <summary>
         /// 画像データを生成します。

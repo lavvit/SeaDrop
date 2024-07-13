@@ -8,8 +8,11 @@ namespace SeaDrop
         public int Length;
         public int ID;
 
+        public Sound() { Path = ""; }
+
         public Sound(string path)
         {
+            Path = "";
             Set(path);
         }
 
@@ -45,6 +48,13 @@ namespace SeaDrop
         public void PlayLoop()
         {
             PlaySoundMem(ID, DX_PLAYTYPE_LOOP);
+        }
+        public void PlayLoopUp()
+        {
+            if (Enable && (NonPlayed || Played))
+            {
+                Play();
+            }
         }
 
         public void Stop()
@@ -84,6 +94,21 @@ namespace SeaDrop
 
 
         public bool Playing { get { return CheckSoundMem(ID) > 0; } }
+        public bool NonPlayed
+        {
+            get
+            {
+                return !Playing && Time == 0;
+            }
+        }
+        public bool Played
+        {
+            get
+            {
+                return !Playing && Time == Length;
+            }
+        }
+
         public int Pan
         {
             get { return GetPanSoundMem(ID); }

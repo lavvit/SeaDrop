@@ -5,6 +5,11 @@ namespace SeaDrop
 {
     public class Drawing
     {
+        public static void Blackout(double opacity = 1.0, int color = 0)
+        {
+            Box(0, 0, DXLib.Width, DXLib.Height, color, true, 1, opacity);
+        }
+
         public static void Line(double x, double y, double x1, double y1, int color = 0xffffff, int thick = 1, double opacity = 1.0, BlendMode blend = BlendMode.None)
         {
             SetDrawBlendMode((int)blend, (int)(255.0 * opacity));
@@ -41,11 +46,31 @@ namespace SeaDrop
             SetDrawBlendMode((int)blend, (int)(255.0 * opacity));
             if (str == null) return;
             if (str.ToString() == null) return;
+            if (str.GetType().ToString().Contains("[]"))
+            {
+                var objects = str as object[];
+                Text(x, y, objects, color, handle, edgecolor, vertical, point, opacity, blend);
+            }
+            else if (str.GetType().ToString().Contains("Generic.List"))
+            {
+                var objects = (List<string>)(IEnumerable<string>)str;
+                for (int i = 0; i < objects.Count; i++)
+                {
+                    Text(x, y + TextSize(objects[i], -1, handle).Height * i, objects[i], color, handle, edgecolor, vertical, point, opacity, blend);
+                }
+            }
+            else
+            {
+                drawtext(x, y, str, color, handle, edgecolor, vertical, point);
+            }
+            SetDrawBlendMode((int)BlendMode.None, 255);
+        }
+        private static void drawtext(double x, double y, object? str, int color, Handle? handle, int edgecolor, bool vertical, ReferencePoint point)
+        {
             var po = TextPoint(point, str, -1, handle);
             float x1 = (float)x - po.X, y1 = (float)y - po.Y;
             if (handle != null && handle.Enable) DrawStringFToHandle(x1, y1, str.ToString(), (uint)color, handle.ID, (uint)edgecolor, vertical ? 1 : 0);
             else DrawStringF(x1, y1, str.ToString(), (uint)color);
-            SetDrawBlendMode((int)BlendMode.None, 255);
         }
 
         public static (int Width, int Height, int Count) TextSize(object? str, int length = -1, Handle? handle = null)
@@ -116,6 +141,22 @@ namespace SeaDrop
                     break;
             }
             return point;
+        }
+
+
+        public static void Text(double x, double y, object[]? str, int color = 0xffffff, Handle? handle = null, int edgecolor = 0, bool vertical = false, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, BlendMode blend = BlendMode.None)
+        {
+            for (int i = 0; i < str?.Length; i++)
+            {
+                Text(x, y + TextSize(str[i], -1, handle).Height * i, str[i], color, handle, edgecolor, vertical, point, opacity, blend);
+            }
+        }
+        public static void Text(double x, double y, List<object>? str, int color = 0xffffff, Handle? handle = null, int edgecolor = 0, bool vertical = false, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, BlendMode blend = BlendMode.None)
+        {
+            for (int i = 0; i < str?.Count; i++)
+            {
+                Text(x, y + TextSize(str[i], -1, handle).Height * i, str[i], color, handle, edgecolor, vertical, point, opacity, blend);
+            }
         }
     }
 

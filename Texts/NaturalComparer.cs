@@ -124,10 +124,10 @@ namespace SeaDrop
         /// <param name="ignoreCharacter">無視する文字を表す char[]。</param>
         public NaturalComparer(NaturalSortOrder order, NaturalComparerOptions options, char[] ignoreCharacter)
         {
-            this.SortOrder = order;
+            SortOrder = order;
             _ignoreTable = [];
             _ignoreCharacter = ignoreCharacter;
-            this.Options = options; // 最後に実行する必要がある
+            Options = options; // 最後に実行する必要がある
         }
 
         #endregion
@@ -173,7 +173,7 @@ namespace SeaDrop
             set
             {
                 _options = value;
-                if (this.IgnoreSpace)
+                if (IgnoreSpace)
                 {
                     _ignoreTable = new char[_ignoreCharacter.Length + 3];
                     _ignoreCharacter.CopyTo(_ignoreTable, 0);
@@ -191,31 +191,31 @@ namespace SeaDrop
         /// <summary>空白文字の存在を無視するかどうかを取得します。</summary>
         protected virtual bool IgnoreSpace
         {
-            get { return ((_options & NaturalComparerOptions.IgnoreSpace) == NaturalComparerOptions.IgnoreSpace); }
+            get { return (_options & NaturalComparerOptions.IgnoreSpace) == NaturalComparerOptions.IgnoreSpace; }
         }
 
         /// <summary>数字表現の違いを無視するかどうかを取得します。</summary>
         protected virtual bool IgnoreNumber
         {
-            get { return ((_options & NaturalComparerOptions.IgnoreNumber) == NaturalComparerOptions.IgnoreNumber); }
+            get { return (_options & NaturalComparerOptions.IgnoreNumber) == NaturalComparerOptions.IgnoreNumber; }
         }
 
         /// <summary>全角半角の違いを無視するかどうかを取得します。</summary>
         protected virtual bool IgnoreWide
         {
-            get { return ((_options & NaturalComparerOptions.IgnoreWide) == NaturalComparerOptions.IgnoreWide); }
+            get { return (_options & NaturalComparerOptions.IgnoreWide) == NaturalComparerOptions.IgnoreWide; }
         }
 
         /// <summary>大文字小文字の違いを無視するかどうかを取得します。</summary>
         protected virtual bool IgnoreCase
         {
-            get { return ((_options & NaturalComparerOptions.IgnoreCase) == NaturalComparerOptions.IgnoreCase); }
+            get { return (_options & NaturalComparerOptions.IgnoreCase) == NaturalComparerOptions.IgnoreCase; }
         }
 
         /// <summary>カタカナひらがなの違いを無視するかどうかを取得します。</summary>
         protected virtual bool IgnoreKana
         {
-            get { return ((_options & NaturalComparerOptions.IgnoreKana) == NaturalComparerOptions.IgnoreKana); }
+            get { return (_options & NaturalComparerOptions.IgnoreKana) == NaturalComparerOptions.IgnoreKana; }
         }
 
         #endregion
@@ -300,7 +300,7 @@ namespace SeaDrop
                 c2 = s2[p2];
 
                 // 両方とも何らかの数字の場合
-                if ((this.IgnoreNumber || (this.IgnoreNumber == false && t1 == t2)) && t1 != CharTypes.None && t2 != CharTypes.None)
+                if ((IgnoreNumber || IgnoreNumber == false && t1 == t2) && t1 != CharTypes.None && t2 != CharTypes.None)
                 {
                     int i1 = p1;
                     int i2 = p2;
@@ -335,7 +335,7 @@ namespace SeaDrop
                 // いずれかが数字の場合
                 else if ((t1 != CharTypes.None || t2 != CharTypes.None) && t1 != CharTypes.RomanNumber && t2 != CharTypes.RomanNumber)
                 {
-                    return (t1 != CharTypes.None) ? -1 : 1;
+                    return t1 != CharTypes.None ? -1 : 1;
                 }
                 // 数字でない場合は文字コードを比較する
                 else
@@ -360,7 +360,7 @@ namespace SeaDrop
             // 共通部分が一致している場合は、残りの文字列長で大小関係を決める
             if (p1 >= s1.Length)
             {
-                return (p2 >= s2.Length) ? 0 : -1;
+                return p2 >= s2.Length ? 0 : -1;
             }
             else
             {
@@ -375,7 +375,7 @@ namespace SeaDrop
         {
             for (; pos < source.Length; pos++)
             {
-                if (Array.IndexOf<char>(_ignoreTable, source[pos]) == -1)
+                if (Array.IndexOf(_ignoreTable, source[pos]) == -1)
                 {
                     break;
                 }
@@ -552,19 +552,19 @@ namespace SeaDrop
             StringBuilder buffer = new StringBuilder(source);
 
             // 全角半角の違いを無視する
-            if (this.IgnoreWide)
+            if (IgnoreWide)
             {
                 ConvertHalf(buffer);
             }
 
             // 大文字小文字の違いを無視する
-            if (this.IgnoreCase)
+            if (IgnoreCase)
             {
                 ConvertUpperCase(buffer);
             }
 
             // カタカナひらがなの違いを無視する
-            if (this.IgnoreKana)
+            if (IgnoreKana)
             {
                 ConvertKatakana(buffer);
             }
@@ -611,7 +611,7 @@ namespace SeaDrop
         {
             for (int i = 0; i < source.Length; i++)
             {
-                if ((source[i] >= 'a' && source[i] <= 'z') && (source[i] >= 'ａ' && source[i] <= 'ｚ'))
+                if (source[i] >= 'a' && source[i] <= 'z' && source[i] >= 'ａ' && source[i] <= 'ｚ')
                 {
                     source[i] = char.ToUpperInvariant(source[i]);
                 }
@@ -792,7 +792,7 @@ namespace SeaDrop
                 value = 0;
             }
 
-            return (number?.IsError == false);
+            return number?.IsError == false;
         }
 
         /// <summary>2つの文字コードを比較します。</summary>
@@ -1114,7 +1114,7 @@ namespace SeaDrop
             /// <returns>指定の文字が英字だった場合は <see langword="true"/>、それ以外の場合は <see langword="false"/>。</returns>
             protected bool IsAlpha(char alpha)
             {
-                return ((alpha >= 'A' && alpha <= 'Z') || (alpha >= 'a' && alpha <= 'z') || (alpha >= 'Ａ' && alpha <= 'Ｚ') || (alpha >= 'ａ' && alpha <= 'ｚ'));
+                return alpha >= 'A' && alpha <= 'Z' || alpha >= 'a' && alpha <= 'z' || alpha >= 'Ａ' && alpha <= 'Ｚ' || alpha >= 'ａ' && alpha <= 'ｚ';
             }
 
             #endregion
@@ -1445,7 +1445,7 @@ namespace SeaDrop
                 // 2文字目の内容で位取り記数法かどうかを決定する
                 if (_length == 1)
                 {
-                    _isNumeral = (_number + _value1 < 10 && value < 10);
+                    _isNumeral = _number + _value1 < 10 && value < 10;
                     if (_isNumeral)
                     {
                         _value2 = _number;

@@ -4,14 +4,15 @@ namespace SeaDrop
 {
     public class Text
     {
-        public static List<string> Read(string path)
+        public static List<string> Read(string path, bool allsplit = true)
         {
-            var list = new List<string>();
+            List<string> list = [];
             if (string.IsNullOrEmpty(path) || !File.Exists(path)) return list;
 
             using (StreamReader sr = new StreamReader(path, GetEncoding(path)))
             {
-                list.AddRange(sr.ReadToEnd().Split(new string[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries));
+                string[] split = allsplit ? ["\r\n", "\r", "\n"] : ["\r\n"];
+                list.AddRange(sr.ReadToEnd().Split(split, StringSplitOptions.RemoveEmptyEntries));
             }
             return list;
         }
@@ -255,14 +256,14 @@ namespace SeaDrop
 
                 if (!judgeSecondByte)
                 {
-                    if ((b == 0x0D  //CR
+                    if (b == 0x0D  //CR
                     || b == 0x0A //LF
                     || b == 0x09 //tab
-                    || (0x20 <= b && b <= 0x7E)))//半角カナ除く1バイト
+                    || 0x20 <= b && b <= 0x7E)//半角カナ除く1バイト
                     {
                         counter++;
                     }
-                    else if ((0x81 <= b && b <= 0x9F) || (0xE0 <= b && b <= 0xFC))//ShiftJISの2バイト文字の1バイト目の場合
+                    else if (0x81 <= b && b <= 0x9F || 0xE0 <= b && b <= 0xFC)//ShiftJISの2バイト文字の1バイト目の場合
                     {
                         //2バイト目の判定を行う
                         judgeSecondByte = true;
@@ -283,7 +284,7 @@ namespace SeaDrop
                 }
                 else
                 {
-                    if ((0x40 <= b && b <= 0x7E) || (0x80 <= b && b <= 0xFC)) //ShiftJISの2バイト文字の2バイト目の場合
+                    if (0x40 <= b && b <= 0x7E || 0x80 <= b && b <= 0xFC) //ShiftJISの2バイト文字の2バイト目の場合
                     {
                         counter += 2;
                         judgeSecondByte = false;
@@ -296,7 +297,7 @@ namespace SeaDrop
                 }
             }
 
-            return (double)counter / (double)bytes.Length;
+            return counter / (double)bytes.Length;
         }
 
         //日本語の文章と仮定したときUTF-8らしいか
@@ -341,7 +342,7 @@ namespace SeaDrop
                 }
             }
 
-            return ((double)len - (double)str.Length) / (double)len;
+            return (len - (double)str.Length) / len;
         }
 
         //日本語の文章と仮定したときEUC-JPらしいか
@@ -381,7 +382,7 @@ namespace SeaDrop
                 }
             }
 
-            return ((double)len - (double)str.Length) / (double)len;
+            return (len - (double)str.Length) / len;
         }
         #endregion
     }
