@@ -79,6 +79,11 @@ namespace SeaDrop
                             FPS.Update();
                             BaseScene?.Draw();
                             NowScene?.Draw();
+#if DEBUG
+
+                            BaseScene?.Debug();
+                            NowScene?.Debug();
+#endif
 
                             // 裏画面の内容を表画面に反映
                             ScreenFlip();
@@ -119,6 +124,11 @@ namespace SeaDrop
                     Updates();
                     BaseScene?.Draw();
                     NowScene?.Draw();
+#if DEBUG
+
+                    BaseScene?.Debug();
+                    NowScene?.Debug();
+#endif
                 }
             }
         }

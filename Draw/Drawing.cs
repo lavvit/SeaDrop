@@ -5,6 +5,7 @@ namespace SeaDrop
 {
     public class Drawing
     {
+        #region Shape
         public static void Blackout(double opacity = 1.0, int color = 0)
         {
             Box(0, 0, DXLib.Width, DXLib.Height, color, true, 1, opacity);
@@ -40,7 +41,9 @@ namespace SeaDrop
             DrawCircleAA((float)x, (float)y, (float)r, pos, (uint)color, fill ? 1 : 0, thick);
             SetDrawBlendMode((int)BlendMode.None, 255);
         }
+        #endregion
 
+        #region Text
         public static void Text(double x, double y, object? str, int color = 0xffffff, Handle? handle = null, int edgecolor = 0, bool vertical = false, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, BlendMode blend = BlendMode.None)
         {
             SetDrawBlendMode((int)blend, (int)(255.0 * opacity));
@@ -158,6 +161,139 @@ namespace SeaDrop
                 Text(x, y + TextSize(str[i], -1, handle).Height * i, str[i], color, handle, edgecolor, vertical, point, opacity, blend);
             }
         }
+        #endregion
+
+        #region Color
+        /// <summary>
+        /// RGB値からint形式の色を取得します。
+        /// </summary>
+        /// <returns>色</returns>
+        public static int Color(int red, int green, int blue)
+        {
+            return (int)GetColor(red, green, blue);
+        }
+        /// <summary>
+        /// RGB値からint形式の色を取得します。
+        /// </summary>
+        /// <returns>色</returns>
+        public static int Color((int, int, int) rgb)
+        {
+            return (int)GetColor(rgb.Item1, rgb.Item2, rgb.Item3);
+        }
+        public static int Color((int, int, int, int) rgba)
+        {
+            return (int)GetColor(rgba.Item1, rgba.Item2, rgba.Item3);
+        }
+        /// <summary>
+        /// カラーコードからint形式の色を取得します。
+        /// </summary>
+        /// <returns>色</returns>
+        public static int Color(string color)
+        {
+            return Color(ColorTranslator.FromHtml(color));
+        }
+        /// <summary>
+        /// Colorからint形式の色を取得します。
+        /// </summary>
+        /// <returns>色</returns>
+        public static int Color(Color color)
+        {
+            return Color(color.R, color.G, color.B);
+        }
+        /// <summary>
+        /// HSBカラーモデルからint形式の色を取得します。
+        /// </summary>
+        /// <returns>色</returns>
+        public static int Color(double hue, double saturation, double brightness)
+        {
+            (int, int, int) color = ColorRGB(hue, saturation, brightness);
+            return Color(color.Item1, color.Item2, color.Item3);
+        }
+        /// <summary>
+        /// HSBカラーモデルから色を生成します。
+        /// </summary>
+        /// <returns>色</returns>
+        public static (int, int, int) ColorRGB(double hue, double saturation, double brightness)
+        {
+            double percent = hue / 60.0;
+            int max = (int)(255 * brightness);
+            int min = max - (int)(max * saturation);
+            int m = max - min;
+            double d = percent - (int)percent;
+            switch ((int)percent)
+            {
+                case 0:
+                default:
+                    return (max, (int)(m * d) + min, min);
+                case 1:
+                    return ((int)(m * (1.0 - d)) + min, max, min);
+                case 2:
+                    return (min, max, (int)(m * d) + min);
+                case 3:
+                    return (min, (int)(m * (1.0 - d)) + min, max);
+                case 4:
+                    return ((int)(m * d) + min, min, max);
+                case 5:
+                    return (max, min, (int)(m * (1.0 - d)) + min);
+            }
+        }
+        /// <summary>
+        /// ゲーミング色を生成します。
+        /// </summary>
+        /// <returns>色</returns>
+        public static (int, int, int) RainbowRGB(Counter timer, int potition = 0, double white = 0, bool reverse = false)
+        {
+            double percent = ((double)(reverse ? timer.End - timer.Value : timer.Value) / timer.End * 360) + potition;
+            return ColorRGB((int)percent % 360, 1.0 - white, 1.0);
+        }
+        /// <summary>
+        /// タイマーの値を参考にゲーミング色を取得します。
+        /// </summary>
+        /// /// <param name="potition">色相(0~360)</param>
+        /// <returns>色</returns>
+        public static int Rainbow(Counter timer, int potition = 0, double white = 0, bool reverse = false)
+        {
+            return Color(RainbowRGB(timer, potition, white, reverse));
+        }
+        /// <summary>
+        /// タイマーの値を参考にゲーミング色を取得します。(Color出力)
+        /// </summary>
+        /// /// <param name="potition">色相(0~360)</param>
+        /// <returns>色</returns>
+        public static Color RainbowC(Counter timer, int potition = 0, double white = 0, bool reverse = false)
+        {
+            return System.Drawing.Color.FromArgb(RainbowRGB(timer, potition, white, reverse).Item1, RainbowRGB(timer, potition, white, reverse).Item2, RainbowRGB(timer, potition, white, reverse).Item3);
+        }
+
+        public static Color ReadColor(string color)
+        {
+            if (color.StartsWith("#"))
+            {
+                return ColorTranslator.FromHtml(color);
+            }
+            else if (int.TryParse(color, out int colorx))
+            {
+                return System.Drawing.Color.FromArgb(colorx);
+            }
+            else
+            {
+                string[] ch = color.Split(' ');
+                if (color.Contains(' '))
+                {
+                    int r = 0, g = 0, b = 0, a = 0;
+                    if (ch.Length >= 1) int.TryParse(ch[0].Trim(), out r);
+                    if (ch.Length >= 2) int.TryParse(ch[1].Trim(), out g);
+                    if (ch.Length >= 3) int.TryParse(ch[2].Trim(), out b);
+                    if (ch.Length >= 4) int.TryParse(ch[3].Trim(), out a);
+                    return System.Drawing.Color.FromArgb(a, r, g, b);
+                }
+                else
+                {
+                    return System.Drawing.Color.FromName(color);
+                }
+            }
+        }
+        #endregion
     }
 
     public class Handle

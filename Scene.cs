@@ -62,6 +62,13 @@
             if (!Enabled) return;
         }
         /// <summary>
+        /// デバッグ時の描画を行う。
+        /// </summary>
+        public virtual void Debug()
+        {
+            if (!Enabled) return;
+        }
+        /// <summary>
         /// 更新を行う。
         /// </summary>
         public virtual void Update()
