@@ -33,6 +33,7 @@ namespace SeaDrop
         public void Dispose()
         {
             Stop();
+            DeleteSoundMem(ID);
             ID = -1;
             Enable = false;
         }

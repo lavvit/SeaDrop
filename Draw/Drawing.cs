@@ -5,6 +5,7 @@ namespace SeaDrop
 {
     public class Drawing
     {
+        public static Handle DebugHandle = new();
         #region Shape
         public static void Blackout(double opacity = 1.0, int color = 0)
         {
@@ -146,19 +147,26 @@ namespace SeaDrop
             return point;
         }
 
-
+        public static void Text(double x, double y, object? str, Handle? handle, int color = 0xffffff, int edgecolor = 0, bool vertical = false, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, BlendMode blend = BlendMode.None)
+        {
+            Text(x, y, str, color, handle, edgecolor, vertical, point, opacity, blend);
+        }
         public static void Text(double x, double y, object[]? str, int color = 0xffffff, Handle? handle = null, int edgecolor = 0, bool vertical = false, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, BlendMode blend = BlendMode.None)
         {
+            int h = 0;
             for (int i = 0; i < str?.Length; i++)
             {
-                Text(x, y + TextSize(str[i], -1, handle).Height * i, str[i], color, handle, edgecolor, vertical, point, opacity, blend);
+                Text(x, y + h, str[i], color, handle, edgecolor, vertical, point, opacity, blend);
+                h += TextSize(str[i], -1, handle).Height;
             }
         }
         public static void Text(double x, double y, List<object>? str, int color = 0xffffff, Handle? handle = null, int edgecolor = 0, bool vertical = false, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, BlendMode blend = BlendMode.None)
         {
+            int h = 0;
             for (int i = 0; i < str?.Count; i++)
             {
-                Text(x, y + TextSize(str[i], -1, handle).Height * i, str[i], color, handle, edgecolor, vertical, point, opacity, blend);
+                Text(x, y + h, str[i], color, handle, edgecolor, vertical, point, opacity, blend);
+                h += TextSize(str[i], -1, handle).Height;
             }
         }
         #endregion
@@ -308,12 +316,17 @@ namespace SeaDrop
         public Handle(string fontpath, string font, int size = 16, int thick = 1, int edge = 1, bool italic = false, EFontType type = EFontType.Normal)
         {
             AddFont(fontpath);
-            Font = font;
+            Font = GetFontNameToHandle(ID);
             Set(size, thick, edge, italic, type);
         }
         public Handle(string? font = null, int size = 16, int thick = 1, int edge = 1, bool italic = false, EFontType type = EFontType.Normal)
         {
-            Font = font;
+            if (File.Exists(font))
+            {
+                AddFont(font);
+                Font = GetFontNameToHandle(ID);
+            }
+            else Font = font;
             Set(size, thick, edge, italic, type);
         }
         public Handle(int size, int thick = 1, int edge = 1, bool italic = false, EFontType type = EFontType.Normal)

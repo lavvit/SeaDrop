@@ -9,7 +9,7 @@ namespace SeaDrop
     public class Texture : IDisposable
     {
         public bool Enable;
-        public string Path;
+        public string Path = "";
         public int ID;
 
         public int Width, Height;
@@ -23,7 +23,7 @@ namespace SeaDrop
 
         public bool TurnX, TurnY;
 
-        public Texture() { Path = ""; }
+        public Texture() { }
 
         /// <summary>
         /// 画像データを生成します。
@@ -32,6 +32,7 @@ namespace SeaDrop
         public Texture(string path)
         {
             Path = path;
+            if (!File.Exists(Path)) return;
             ID = LoadGraph(path);
             Enable = ID > 0;
 
@@ -200,7 +201,7 @@ namespace SeaDrop
         public static (int Width, int Height) GetSize(string path)
         {
             if (!File.Exists(path)) return (0, 0);
-            FileStream fs = new FileStream("", FileMode.Open, FileAccess.Read);
+            FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read);
             fs.Seek(16, SeekOrigin.Begin);
             byte[] buf = new byte[8];
             fs.Read(buf, 0, 8);

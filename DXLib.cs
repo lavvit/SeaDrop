@@ -36,6 +36,7 @@ namespace SeaDrop
             SetSize(width, height, scale);
             if (DxLib_Init() < 0) return; // ＤＸライブラリ初期化処理 エラーが起きたら直ちに終了
 
+            Drawing.DebugHandle = new(20, 2, 1, false, EFontType.AntialiasingEdge);
             if (MultiThreading) BaseScene = scene;
             SceneChange(scene, false);
             Update(); // メイン処理

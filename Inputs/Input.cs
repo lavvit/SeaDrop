@@ -30,6 +30,7 @@ namespace SeaDrop
             SetActiveKeyInput(Handle);
             IsEnable = true;
             NumMode = false;
+            DoubleMode = false;
             Text = "";
             start = "";
         }
@@ -46,6 +47,16 @@ namespace SeaDrop
             NNow = start;
             NMin = min;
             NMax = max;
+            NUp = up;
+            NDown = down;
+        }
+        public static void InitDouble(double start, double? min = null, double? max = null, EKey up = EKey.Up, EKey down = EKey.Down)
+        {
+            Init(512, true, false, true, false, false);
+            DoubleMode = true;
+            DNow = start;
+            DMin = min;
+            DMax = max;
             NUp = up;
             NDown = down;
         }
@@ -96,6 +107,19 @@ namespace SeaDrop
                     if (NMin != null && NNow <= NMin) NNow = NMin.Value;
                 }
             }
+            if (DoubleMode)
+            {
+                if (Key.IsPushed(NUp))
+                {
+                    DNow++;
+                    if (DMax != null && DNow >= DMax) DNow = DMax.Value;
+                }
+                if (Key.IsPushed(NDown))
+                {
+                    DNow--;
+                    if (DMin != null && DNow <= DMin) DNow = DMin.Value;
+                }
+            }
             if (Text.Contains("\u0001"))
             {
                 Text = Text.Substring(0, Text.Length - 1);
@@ -117,6 +141,20 @@ namespace SeaDrop
             {
                 string? str = CheckKeyInput(Handle) != 2 ? Text : start;
                 if (str == null) str = "";
+                if (NumMode)
+                {
+                    int.TryParse(str, out NNow);
+                    if (NMax != null && NNow >= NMax) NNow = NMax.Value;
+                    if (NMin != null && NNow <= NMin) NNow = NMin.Value;
+                    str = $"{NNow}";
+                }
+                if (DoubleMode)
+                {
+                    double.TryParse(str, out DNow);
+                    if (DMax != null && DNow >= DMax) DNow = DMax.Value;
+                    if (DMin != null && DNow <= DMin) DNow = DMin.Value;
+                    str = $"{DNow}";
+                }
                 End();
                 return str;
             }
@@ -176,6 +214,10 @@ namespace SeaDrop
                     if (NumMode && string.IsNullOrEmpty(Builder != null ? Builder.ToString() : ""))
                     {
                         return NNow.ToString();
+                    }
+                    else if (DoubleMode && string.IsNullOrEmpty(Builder != null ? Builder.ToString() : ""))
+                    {
+                        return DNow.ToString();
                     }
                     else
                     {
@@ -250,6 +292,9 @@ namespace SeaDrop
         private static bool NumMode = false;
         private static int NNow = 0;
         private static int? NMin = null, NMax = null;
+        private static bool DoubleMode = false;
+        private static double DNow = 0;
+        private static double? DMin = null, DMax = null;
         private static EKey NUp = EKey.Up, NDown = EKey.Down;
     }
 
