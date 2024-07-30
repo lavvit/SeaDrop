@@ -15,6 +15,7 @@ namespace SeaDrop
         public int Width, Height;
         public double Scale = 1.0, Angle;
         public (double X, double Y)? XYScale = null;
+        public Point? Center = null;
         public ReferencePoint ReferencePoint;
         public Rectangle? Rectangle;
         public BlendMode Blend = BlendMode.None;
@@ -74,7 +75,7 @@ namespace SeaDrop
             SetDrawBlendMode((int)Blend, BlendDepth);
             SetDrawBright(Color.R, Color.G, Color.B);
 
-            Point point = Point(Rectangle);
+            Point point = Center != null ? Center.Value : Point(Rectangle);
             if (Rectangle.HasValue) DrawRect(x, y);
             else if (XYScale.HasValue)
             {
@@ -92,7 +93,7 @@ namespace SeaDrop
         {
             if (!Enable) return;
 
-            Point point = Point(Rectangle);
+            Point point = Center != null ? Center.Value : Point(Rectangle);
             float x1 = (float)x - point.X;
             float y1 = (float)y - point.Y;
             float x2 = x1 + (float)width;
@@ -102,7 +103,7 @@ namespace SeaDrop
         public void DrawRect(double x, double y)
         {
             if (!Enable || !Rectangle.HasValue) return;
-            Point point = Point(Rectangle);
+            Point point = Center != null ? Center.Value : Point(Rectangle);
             if (XYScale.HasValue) DrawRectRotaGraph3F((float)x, (float)y,
                 Rectangle.Value.X, Rectangle.Value.Y, Rectangle.Value.Width, Rectangle.Value.Height,
                 point.X, point.Y, XYScale.Value.X, XYScale.Value.Y, Angle * Math.PI, ID, TRUE, TurnX ? 1 : 0, TurnY ? 1 : 0);
@@ -116,6 +117,11 @@ namespace SeaDrop
             if (width < 0) width = Width;
             if (height < 0) height = Height;
             Rectangle = new Rectangle(x, y, width, height);
+        }
+
+        public void SetCenter(double x, double y)
+        {
+            Center = new Point((int)x, (int)y);
         }
 
         public void SetOpacity(double opacity)
