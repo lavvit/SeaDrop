@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Drawing.Text;
 using static DxLibDLL.DX;
 
 namespace SeaDrop
@@ -316,17 +317,12 @@ namespace SeaDrop
         public Handle(string fontpath, string font, int size = 16, int thick = 1, int edge = 1, bool italic = false, EFontType type = EFontType.Normal)
         {
             AddFont(fontpath);
-            Font = GetFontNameToHandle(ID);
+            Font = font;
             Set(size, thick, edge, italic, type);
         }
         public Handle(string? font = null, int size = 16, int thick = 1, int edge = 1, bool italic = false, EFontType type = EFontType.Normal)
         {
-            if (File.Exists(font))
-            {
-                AddFont(font);
-                Font = GetFontNameToHandle(ID);
-            }
-            else Font = font;
+            Font = GetFont(font);
             Set(size, thick, edge, italic, type);
         }
         public Handle(int size, int thick = 1, int edge = 1, bool italic = false, EFontType type = EFontType.Normal)
@@ -350,9 +346,24 @@ namespace SeaDrop
             Enable = ID >= 0;
         }
 
-        public static void AddFont(string path)
+        public static void AddFont(string? path)
         {
             if (File.Exists(path)) AddFontFile(path);
+        }
+
+        public static string GetFont(string? font)
+        {
+            string name = GetFontName();
+            if (font == null) return name;
+            if (File.Exists(font)) AddFontFile(font);
+            else return font;
+
+            PrivateFontCollection pfc = new();
+            pfc.AddFontFile(font);
+
+            font = pfc.Families[0].Name;
+
+            return font;
         }
     }
 
