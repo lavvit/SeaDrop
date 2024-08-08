@@ -329,6 +329,9 @@ namespace SeaDrop
         {
             Set(size, thick, edge, italic, type);
         }
+
+        public Handle() { }
+
         public void Set(int size, int thick, int edge, bool italic, EFontType type)
         {
             Size = size;
