@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Drawing.Text;
+using System.Runtime.Versioning;
 using static DxLibDLL.DX;
 
 namespace SeaDrop
@@ -7,6 +8,12 @@ namespace SeaDrop
     public class Drawing
     {
         public static Handle DebugHandle = new();
+
+        public static void Init()
+        {
+            DebugHandle = new(SystemFonts.MenuFont != null ? SystemFonts.MenuFont.Name : "", 20, 2, 1, false, EFontType.AntialiasingEdge);
+        }
+
         #region Shape
         public static void Blackout(double opacity = 1.0, int color = 0)
         {
@@ -46,7 +53,7 @@ namespace SeaDrop
         #endregion
 
         #region Text
-        public static void Text(double x, double y, object? str, int color = 0xffffff, Handle? handle = null, int edgecolor = 0, bool vertical = false, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, BlendMode blend = BlendMode.None)
+        public static void Text(double x, double y, object? str, int color = 0xffffff, Handle? handle = null, int edgecolor = 0, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, bool vertical = false, BlendMode blend = BlendMode.None)
         {
             SetDrawBlendMode((int)blend, (int)(255.0 * opacity));
             if (str == null) return;
@@ -54,14 +61,14 @@ namespace SeaDrop
             if (str.GetType().ToString().Contains("[]"))
             {
                 var objects = str as object[];
-                Text(x, y, objects, color, handle, edgecolor, vertical, point, opacity, blend);
+                Text(x, y, objects, color, handle, edgecolor, point, opacity, vertical, blend);
             }
             else if (str.GetType().ToString().Contains("Generic.List"))
             {
                 var objects = (List<string>)(IEnumerable<string>)str;
                 for (int i = 0; i < objects.Count; i++)
                 {
-                    Text(x, y + TextSize(objects[i], -1, handle).Height * i, objects[i], color, handle, edgecolor, vertical, point, opacity, blend);
+                    Text(x, y + TextSize(objects[i], -1, handle).Height * i, objects[i], color, handle, edgecolor, point, opacity, vertical, blend);
                 }
             }
             else
@@ -74,8 +81,8 @@ namespace SeaDrop
         {
             var po = TextPoint(point, str, -1, handle);
             float x1 = (float)x - po.X, y1 = (float)y - po.Y;
-            if (handle != null && handle.Enable) DrawStringFToHandle(x1, y1, str.ToString(), (uint)color, handle.ID, (uint)edgecolor, vertical ? 1 : 0);
-            else DrawStringF(x1, y1, str.ToString(), (uint)color);
+            if (handle != null && handle.Enable) DrawStringFToHandle(x1, y1, str?.ToString(), (uint)color, handle.ID, (uint)edgecolor, vertical ? 1 : 0);
+            else DrawStringF(x1, y1, str?.ToString(), (uint)color);
         }
 
         public static (int Width, int Height, int Count) TextSize(object? str, int length = -1, Handle? handle = null)
@@ -150,14 +157,14 @@ namespace SeaDrop
 
         public static void Text(double x, double y, object? str, Handle? handle, int color = 0xffffff, int edgecolor = 0, bool vertical = false, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, BlendMode blend = BlendMode.None)
         {
-            Text(x, y, str, color, handle, edgecolor, vertical, point, opacity, blend);
+            Text(x, y, str, color, handle, edgecolor, point, opacity, vertical, blend);
         }
         public static void Text(double x, double y, object[]? str, int color = 0xffffff, Handle? handle = null, int edgecolor = 0, bool vertical = false, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, BlendMode blend = BlendMode.None)
         {
             int h = 0;
             for (int i = 0; i < str?.Length; i++)
             {
-                Text(x, y + h, str[i], color, handle, edgecolor, vertical, point, opacity, blend);
+                Text(x, y + h, str[i], color, handle, edgecolor, point, opacity, vertical, blend);
                 h += TextSize(str[i], -1, handle).Height;
             }
         }
@@ -166,7 +173,7 @@ namespace SeaDrop
             int h = 0;
             for (int i = 0; i < str?.Count; i++)
             {
-                Text(x, y + h, str[i], color, handle, edgecolor, vertical, point, opacity, blend);
+                Text(x, y + h, str[i], color, handle, edgecolor, point, opacity, vertical, blend);
                 h += TextSize(str[i], -1, handle).Height;
             }
         }
@@ -301,6 +308,17 @@ namespace SeaDrop
                     return System.Drawing.Color.FromName(color);
                 }
             }
+        }
+        #endregion
+
+        #region Override
+        public static void StartOverride()
+        {
+
+        }
+        public static void EndOverride()
+        {
+
         }
         #endregion
     }

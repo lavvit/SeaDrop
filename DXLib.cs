@@ -36,7 +36,7 @@ namespace SeaDrop
             SetSize(width, height, scale);
             if (DxLib_Init() < 0) return; // ＤＸライブラリ初期化処理 エラーが起きたら直ちに終了
 
-            Drawing.DebugHandle = new(20, 2, 1, false, EFontType.AntialiasingEdge);
+            Drawing.Init();
             if (MultiThreading) BaseScene = scene;
             SceneChange(scene, false);
             Update(); // メイン処理
@@ -226,7 +226,7 @@ namespace SeaDrop
             SetDragFileValidFlag(enable ? 1 : 0);
         }
 
-        public static void Error(object e, string str = "", string errorname = null)
+        public static void Error(object e, string str = "", string? errorname = null)
         {
             if (!string.IsNullOrEmpty(str)) str += "\n";
             if (!string.IsNullOrEmpty(errorname)) errorname = " : " + errorname;
