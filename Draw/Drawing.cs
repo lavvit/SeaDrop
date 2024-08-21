@@ -177,6 +177,27 @@ namespace SeaDrop
                 h += TextSize(str[i], -1, handle).Height;
             }
         }
+
+        public static void Text(double x, double y, object? str, Texture texture, Handle? handle = null)
+        {
+            var size = TextSize(str?.ToString(), -1, handle);
+            var scr = MakeScreen(size.Width, size.Height, TRUE);
+            SetDrawScreen(scr);
+            SetBackgroundColor(0, 0, 0);
+            ClearDrawScreen();
+
+            Text(0, 0, str, handle);
+            texture.XYScale = ((double)size.Width / texture.Width, (double)size.Height / texture.Height);
+            texture.Blend = BlendMode.Multiply;
+            texture.BlendDepth = 255;
+            texture.Draw(0, 0);
+
+            //作成したスクリーンの内容を裏画面に描画する
+            SetDrawScreen(DX_SCREEN_BACK);
+            DrawGraph((int)x, (int)y, scr, TRUE);
+            //Text(x, y, str, handle);
+        }
+
         #endregion
 
         #region Color
