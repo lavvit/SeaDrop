@@ -1,6 +1,5 @@
 ﻿using System.Drawing;
 using System.Drawing.Text;
-using System.Runtime.Versioning;
 using static DxLibDLL.DX;
 
 namespace SeaDrop
@@ -186,7 +185,7 @@ namespace SeaDrop
             SetBackgroundColor(0, 0, 0);
             ClearDrawScreen();
 
-            Text(0, 0, str, handle);
+            Text(0, 0, str, handle, 0xffffff);
             texture.XYScale = ((double)size.Width / texture.Width, (double)size.Height / texture.Height);
             texture.Blend = BlendMode.Multiply;
             texture.BlendDepth = 255;
@@ -195,7 +194,49 @@ namespace SeaDrop
             //作成したスクリーンの内容を裏画面に描画する
             SetDrawScreen(DX_SCREEN_BACK);
             DrawGraph((int)x, (int)y, scr, TRUE);
-            //Text(x, y, str, handle);
+
+            DeleteGraph(scr);
+        }
+        public static void Text(double x, double y, object? str, Color top, Color bottom, Handle? handle = null)
+        {
+            var size = TextSize(str?.ToString(), -1, handle);
+            var scr = MakeScreen(size.Width, size.Height, TRUE);
+            SetDrawScreen(scr);
+            SetBackgroundColor(0, 0, 0);
+            ClearDrawScreen();
+
+            Text(0, 0, str, handle, 0xffffff);
+
+            //作成したスクリーンの内容を裏画面に描画する
+            SetDrawScreen(DX_SCREEN_BACK);
+            Polygon(scr, (int)x, (int)y, size.Width, size.Height, top, top, bottom, bottom);
+
+            DeleteGraph(scr);
+        }
+        public static void Polygon(int handle, int x, int y, int width, int height, Color color1, Color color2, Color color3, Color color4)
+        {
+            VERTEX[] Vertex = new VERTEX[6];
+
+            // 本体部分は DrawPolygon を使用して上下に赤から青にグラデーションさせながら描画
+            Vertex[0].x = x; Vertex[0].y = y;
+            Vertex[1].x = x + width; Vertex[1].y = y;
+            Vertex[2].x = x; Vertex[2].y = y + height;
+            Vertex[3].x = x + width; Vertex[3].y = y + height;
+
+            Vertex[0].u = 0.0f; Vertex[0].v = 0.0f;
+            Vertex[1].u = 1.0f; Vertex[1].v = 0.0f;
+            Vertex[2].u = 0.0f; Vertex[2].v = 1.0f;
+            Vertex[3].u = 1.0f; Vertex[3].v = 1.0f;
+
+            Vertex[0].r = color1.R; Vertex[0].g = color1.G; Vertex[0].b = color1.B; Vertex[0].a = color1.A;
+            Vertex[1].r = color2.R; Vertex[1].g = color2.G; Vertex[1].b = color2.B; Vertex[1].a = color2.A;
+            Vertex[2].r = color3.R; Vertex[2].g = color3.G; Vertex[2].b = color3.B; Vertex[2].a = color3.A;
+            Vertex[3].r = color4.R; Vertex[3].g = color4.G; Vertex[3].b = color4.B; Vertex[3].a = color4.A;
+
+            Vertex[4] = Vertex[2];
+            Vertex[5] = Vertex[1];
+
+            DrawPolygon(Vertex, 2, handle, TRUE, TRUE);
         }
 
         #endregion
@@ -250,7 +291,7 @@ namespace SeaDrop
         /// HSBカラーモデルから色を生成します。
         /// </summary>
         /// <returns>色</returns>
-        public static (int, int, int) ColorRGB(double hue, double saturation, double brightness)
+        public static (int R, int G, int B) ColorRGB(double hue, double saturation, double brightness)
         {
             double percent = hue / 60.0;
             int max = (int)(255 * brightness);
@@ -278,7 +319,7 @@ namespace SeaDrop
         /// ゲーミング色を生成します。
         /// </summary>
         /// <returns>色</returns>
-        public static (int, int, int) RainbowRGB(Counter timer, int potition = 0, double white = 0, bool reverse = false)
+        public static (int R, int G, int B) RainbowRGB(Counter timer, int potition = 0, double white = 0, bool reverse = false)
         {
             double percent = ((double)(reverse ? timer.End - timer.Value : timer.Value) / timer.End * 360) + potition;
             return ColorRGB((int)percent % 360, 1.0 - white, 1.0);
@@ -329,6 +370,11 @@ namespace SeaDrop
                     return System.Drawing.Color.FromName(color);
                 }
             }
+        }
+
+        public static Color DColor(int r, int g, int b, int a = 255)
+        {
+            return System.Drawing.Color.FromArgb(a, r, g, b);
         }
         #endregion
 

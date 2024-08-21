@@ -21,6 +21,8 @@ namespace SeaDrop
         public BlendMode Blend = BlendMode.None;
         public int BlendDepth = 255;
         public Color Color = Color.White;
+        public Color AddColor = Color.Black;
+        public BlendMode ColorBlend = BlendMode.None;
 
         public bool TurnX, TurnY;
 
@@ -73,7 +75,12 @@ namespace SeaDrop
             if (!Enable) return;
 
             SetDrawBlendMode((int)Blend, BlendDepth);
+
+            SetDrawMode((XYScale != null && (XYScale?.X != 1.0 || XYScale?.Y != 1.0)) || Scale != 1.0D ?
+                DX_DRAWMODE_BILINEAR : DX_DRAWMODE_NEAREST);
+
             SetDrawBright(Color.R, Color.G, Color.B);
+            SetDrawAddColor(AddColor.R, AddColor.G, AddColor.B);
 
             Point point = Center != null ? Center.Value : Point(Rectangle);
             if (Rectangle.HasValue) DrawRect(x, y);
@@ -88,6 +95,7 @@ namespace SeaDrop
 
             SetDrawBlendMode(0, 0);
             SetDrawBright(255, 255, 255);
+            SetDrawAddColor(0, 0, 0);
         }
         public void DrawExtend(double x, double y, double width, double height)
         {
@@ -186,6 +194,21 @@ namespace SeaDrop
                     break;
             }
             return point;
+        }
+
+        public void SetColor(int r = 255, int g = 255, int b = 255, double a = 1.0)
+        {
+            Color = Color.FromArgb((int)(255 * a), r < 256 ? r : 255, g < 256 ? g : 255, b < 256 ? b : 255);
+            AddColor = Color.FromArgb(255, r > 255 ? r - 256 : 0, g > 255 ? g - 256 : 0, b > 255 ? b - 256 : 0);
+        }
+        public void SetColor((int r, int g, int b, int a) color)
+        {
+            Color = Color.FromArgb(color.a < 256 ? color.a : 255, color.r < 256 ? color.r : 255, color.g < 256 ? color.g : 255, color.b < 256 ? color.b : 255);
+            AddColor = Color.FromArgb(255, color.r > 255 ? color.r - 256 : 0, color.g > 255 ? color.g - 256 : 0, color.b > 255 ? color.b - 256 : 0);
+        }
+        public void SetAddColor(int r = 255, int g = 255, int b = 255, double a = 1.0)
+        {
+            AddColor = Color.FromArgb((int)(255 * a), r < 256 ? r : 255, g < 256 ? g : 255, b < 256 ? b : 255);
         }
 
         public override string ToString()
