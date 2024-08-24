@@ -4,9 +4,9 @@ namespace SeaDrop
     public class Sound : IDisposable
     {
         public bool Enable;
-        public string Path;
+        public string Path = "";
         public int Length;
-        public int ID;
+        public int ID = -1;
 
         public Sound() { Path = ""; }
 
@@ -16,13 +16,15 @@ namespace SeaDrop
             Set(path);
         }
 
-        public void Set(string subpath)
+        public void Set(string path)
         {
             if (!Enable)
             {
-                Path = subpath;
-                ID = LoadSoundMem(subpath);
+                Path = path;
+                if (!File.Exists(path)) return;
+                ID = LoadSoundMem(path);
                 Enable = ID >= 0;
+
                 Length = (int)GetSoundTotalTime(ID);
             }
         }
@@ -52,7 +54,7 @@ namespace SeaDrop
         }
         public void PlayLoopUp()
         {
-            if (Enable && (NonPlayed || Played))
+            if (Enable && (NonPlayed || Played || !Playing))
             {
                 Play();
             }

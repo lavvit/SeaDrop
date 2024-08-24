@@ -8,6 +8,7 @@ namespace SeaDrop
     /// </summary>
     public class Texture : IDisposable
     {
+        public static double DefaultScale = 1.0;
         public bool Enable;
         public string Path = "";
         public int ID;
@@ -25,6 +26,21 @@ namespace SeaDrop
         public BlendMode ColorBlend = BlendMode.None;
 
         public bool TurnX, TurnY;
+
+        public int ScaleWidth
+        {
+            get
+            {
+                return (int)(Width * (XYScale?.X ?? Scale) * DefaultScale);
+            }
+        }
+        public int ScaleHeight
+        {
+            get
+            {
+                return (int)(Height * (XYScale?.Y ?? Scale) * DefaultScale);
+            }
+        }
 
         public Texture() { }
 
@@ -76,21 +92,23 @@ namespace SeaDrop
 
             SetDrawBlendMode((int)Blend, BlendDepth);
 
-            SetDrawMode((XYScale != null && (XYScale?.X != 1.0 || XYScale?.Y != 1.0)) || Scale != 1.0D ?
+            SetDrawMode((XYScale != null && (XYScale?.X != 1.0 || XYScale?.Y != 1.0)) || Scale * DefaultScale != 1.0D ?
                 DX_DRAWMODE_BILINEAR : DX_DRAWMODE_NEAREST);
 
             SetDrawBright(Color.R, Color.G, Color.B);
             SetDrawAddColor(AddColor.R, AddColor.G, AddColor.B);
 
             Point point = Center != null ? Center.Value : Point(Rectangle);
-            if (Rectangle.HasValue) DrawRect(x, y);
+            float fx = (float)(x * DefaultScale);
+            float fy = (float)(y * DefaultScale);
+            if (Rectangle.HasValue) DrawRect(fx, fy);
             else if (XYScale.HasValue)
             {
-                DrawRotaGraph3F((float)x, (float)y, point.X, point.Y, XYScale.Value.X, XYScale.Value.Y, Angle * Math.PI, ID, TRUE, TurnX ? 1 : 0, TurnY ? 1 : 0);
+                DrawRotaGraph3F(fx, fy, point.X, point.Y, XYScale.Value.X * DefaultScale, XYScale.Value.Y * DefaultScale, Angle * Math.PI, ID, TRUE, TurnX ? 1 : 0, TurnY ? 1 : 0);
             }
             else
             {
-                DrawRotaGraph2F((float)x, (float)y, point.X, point.Y, Scale, Angle * Math.PI, ID, TRUE, TurnX ? 1 : 0, TurnY ? 1 : 0);
+                DrawRotaGraph2F(fx, fy, point.X, point.Y, Scale * DefaultScale, Angle * Math.PI, ID, TRUE, TurnX ? 1 : 0, TurnY ? 1 : 0);
             }
 
             SetDrawBlendMode(0, 0);
@@ -102,22 +120,26 @@ namespace SeaDrop
             if (!Enable) return;
 
             Point point = Center != null ? Center.Value : Point(Rectangle);
-            float x1 = (float)x - point.X;
-            float y1 = (float)y - point.Y;
-            float x2 = x1 + (float)width;
-            float y2 = y1 + (float)height;
+            float fx = (float)(x * DefaultScale);
+            float fy = (float)(y * DefaultScale);
+            float x1 = fx - point.X;
+            float y1 = fy - point.Y;
+            float x2 = x1 + (float)(width * DefaultScale);
+            float y2 = y1 + (float)(height * DefaultScale);
             DrawExtendGraphF(x1, y1, x2, y2, ID, TRUE);
         }
         public void DrawRect(double x, double y)
         {
             if (!Enable || !Rectangle.HasValue) return;
             Point point = Center != null ? Center.Value : Point(Rectangle);
-            if (XYScale.HasValue) DrawRectRotaGraph3F((float)x, (float)y,
+            float fx = (float)(x * DefaultScale);
+            float fy = (float)(y * DefaultScale);
+            if (XYScale.HasValue) DrawRectRotaGraph3F(fx, fy,
                 Rectangle.Value.X, Rectangle.Value.Y, Rectangle.Value.Width, Rectangle.Value.Height,
-                point.X, point.Y, XYScale.Value.X, XYScale.Value.Y, Angle * Math.PI, ID, TRUE, TurnX ? 1 : 0, TurnY ? 1 : 0);
+                point.X, point.Y, XYScale.Value.X * DefaultScale, XYScale.Value.Y * DefaultScale, Angle * Math.PI, ID, TRUE, TurnX ? 1 : 0, TurnY ? 1 : 0);
             else DrawRectRotaGraph2F((float)x, (float)y,
                 Rectangle.Value.X, Rectangle.Value.Y, Rectangle.Value.Width, Rectangle.Value.Height,
-                point.X, point.Y, Scale, Angle * Math.PI, ID, TRUE, TurnX ? 1 : 0, TurnY ? 1 : 0);
+                point.X, point.Y, Scale * DefaultScale, Angle * Math.PI, ID, TRUE, TurnX ? 1 : 0, TurnY ? 1 : 0);
         }
 
         public void SetRectangle(int x, int y, int width, int height)

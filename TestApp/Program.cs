@@ -8,19 +8,22 @@ namespace TestApp
         {
             DXLib.VSync = true;
             DXLib.MultiThreading = true;
-            DXLib.Init(new NetTest(), 640, 480);
+            DXLib.Init(new Program(), 640, 480);
             //1280, 720
-            //Program
-            //Shooting
             //
+            //Shooting
+            //NetTest
             //MortorTest
         }
 
-        public static int Speaker = 1;
+        Sound Sound = new();
 
         public override void Enable()
         {
             Input.Init();
+            Sound = new("Amazing Mirage.ogg");
+            Sound.Play();
+
             base.Enable();
         }
 
@@ -29,24 +32,11 @@ namespace TestApp
             Drawing.Text(400, 0, FPS.AverageValue);
             Drawing.Text(400, 20, FPS.AverageProcess);
 
-            Drawing.Text(100, 200, $"Speaker:{Speaker}");
-            Input.Draw(100, 240);
-
             base.Draw();
         }
         public override void Update()
         {
             if (Key.IsPushed(EKey.Esc)) DXLib.End();
-            if (Key.IsPushed(EKey.F1)) Speaker--;
-            if (Key.IsPushed(EKey.F2)) Speaker++;
-
-
-            var str = Input.Enter();
-            if (str != null)
-            {
-                Voicevox.Play(str, Speaker);
-                Input.Init();
-            }
 
             base.Update();
         }

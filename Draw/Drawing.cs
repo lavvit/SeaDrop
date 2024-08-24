@@ -177,7 +177,7 @@ namespace SeaDrop
             }
         }
 
-        public static void Text(double x, double y, object? str, Texture texture, Handle? handle = null)
+        public static void Text(double x, double y, object? str, Texture texture, Handle? handle = null, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, BlendMode blend = BlendMode.None)
         {
             var size = TextSize(str?.ToString(), -1, handle);
             var scr = MakeScreen(size.Width, size.Height, TRUE);
@@ -185,7 +185,7 @@ namespace SeaDrop
             SetBackgroundColor(0, 0, 0);
             ClearDrawScreen();
 
-            Text(0, 0, str, handle, 0xffffff);
+            Text(0, 0, str, handle, 0xffffff, 0, false, point, opacity, blend);
             texture.XYScale = ((double)size.Width / texture.Width, (double)size.Height / texture.Height);
             texture.Blend = BlendMode.Multiply;
             texture.BlendDepth = 255;
@@ -197,31 +197,66 @@ namespace SeaDrop
 
             DeleteGraph(scr);
         }
-        public static void Text(double x, double y, object? str, Color top, Color bottom, Handle? handle = null)
+        public static void Text(double x, double y, object? str, Color top, Color bottom, Handle? handle = null, double border = 0, double center = 0.5, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, BlendMode blend = BlendMode.None)
         {
             var size = TextSize(str?.ToString(), -1, handle);
-            var scr = MakeScreen(size.Width, size.Height, TRUE);
-            SetDrawScreen(scr);
-            SetBackgroundColor(0, 0, 0);
-            ClearDrawScreen();
 
-            Text(0, 0, str, handle, 0xffffff);
+            double bd = -Math.Abs((center - 0.5) * 2) + 1;
+            double cent = 1 - ((1 - border) * bd);
+            int width = size.Width;
+            int height = (int)(size.Height * cent);
+            int height2 = (int)(size.Height * (1 - cent));
+            int mid = size.Height - height - height2;
+
+            var scr1 = MakeScreen(width, height, TRUE);
+            var scr2 = MakeScreen(width, mid, TRUE);
+            var scr3 = MakeScreen(width, height2, TRUE);
+            if (scr1 > -1)
+            {
+                SetDrawScreen(scr1);
+                SetBackgroundColor(0, 0, 0);
+                ClearDrawScreen();
+                Text(0, 0, str, handle, 0xffffff, 0, false, ReferencePoint.TopLeft, opacity, blend);
+            }
+            if (scr2 > -1)
+            {
+                SetDrawScreen(scr2);
+                SetBackgroundColor(0, 0, 0);
+                ClearDrawScreen();
+                Text(0, -height, str, handle, 0xffffff, 0, false, ReferencePoint.TopLeft, opacity, blend);
+            }
+            if (scr3 > -1)
+            {
+                SetDrawScreen(scr3);
+                SetBackgroundColor(0, 0, 0);
+                ClearDrawScreen();
+                Text(0, -height - mid, str, handle, 0xffffff, 0, false, ReferencePoint.TopLeft, opacity, blend);
+            }
+
+            var po = TextPoint(point, str, -1, handle);
+            float x1 = (float)x - po.X, y1 = (float)y - po.Y;
 
             //作成したスクリーンの内容を裏画面に描画する
             SetDrawScreen(DX_SCREEN_BACK);
-            Polygon(scr, (int)x, (int)y, size.Width, size.Height, top, top, bottom, bottom);
+            Polygon(scr1, (int)x1, (int)y1, width, height, top, top, top, top);
+            Polygon(scr2, (int)x1, (int)y1 + height, width, mid, top, top, bottom, bottom);
+            Polygon(scr3, (int)x1, (int)y1 + size.Height - height2, width, height2, bottom, bottom, bottom, bottom);
 
-            DeleteGraph(scr);
+            DeleteGraph(scr1);
+            DeleteGraph(scr2);
+            DeleteGraph(scr3);
         }
         public static void Polygon(int handle, int x, int y, int width, int height, Color color1, Color color2, Color color3, Color color4)
         {
             VERTEX[] Vertex = new VERTEX[6];
+            int x1 = x; int y1 = y;
+            int x2 = x + width; int y2 = y + height;
 
             // 本体部分は DrawPolygon を使用して上下に赤から青にグラデーションさせながら描画
-            Vertex[0].x = x; Vertex[0].y = y;
-            Vertex[1].x = x + width; Vertex[1].y = y;
-            Vertex[2].x = x; Vertex[2].y = y + height;
-            Vertex[3].x = x + width; Vertex[3].y = y + height;
+            Vertex[0].x = x1; Vertex[0].y = y1;
+            Vertex[1].x = x2; Vertex[1].y = y1;
+            Vertex[2].x = x1; Vertex[2].y = y2;
+            Vertex[3].x = x2; Vertex[3].y = y2;
 
             Vertex[0].u = 0.0f; Vertex[0].v = 0.0f;
             Vertex[1].u = 1.0f; Vertex[1].v = 0.0f;
@@ -390,7 +425,7 @@ namespace SeaDrop
         #endregion
     }
 
-    public class Handle
+    public class Handle : IDisposable
     {
         public int ID;
         public bool Enable;
@@ -416,6 +451,14 @@ namespace SeaDrop
         }
 
         public Handle() { }
+        ~Handle() { Dispose(); }
+
+        public void Dispose()
+        {
+            DeleteFontToHandle(ID);
+            ID = -1;
+            Enable = false;
+        }
 
         public void Set(int size, int thick, int edge, bool italic, EFontType type)
         {
