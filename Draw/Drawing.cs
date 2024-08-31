@@ -52,7 +52,7 @@ namespace SeaDrop
         #endregion
 
         #region Text
-        public static void Text(double x, double y, object? str, int color = 0xffffff, Handle? handle = null, int edgecolor = 0, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, bool vertical = false, BlendMode blend = BlendMode.None)
+        public static void Text(double x, double y, object? str, Handle? handle = null, int color = 0xffffff, int edgecolor = 0, double opacity = 1.0, ReferencePoint point = ReferencePoint.TopLeft, BlendMode blend = BlendMode.None, bool vertical = false)
         {
             SetDrawBlendMode((int)blend, (int)(255.0 * opacity));
             if (str == null) return;
@@ -60,23 +60,23 @@ namespace SeaDrop
             if (str.GetType().ToString().Contains("[]"))
             {
                 var objects = str as object[];
-                Text(x, y, objects, color, handle, edgecolor, point, opacity, vertical, blend);
+                Text(x, y, objects, handle, color, edgecolor, opacity, point, blend, vertical);
             }
             else if (str.GetType().ToString().Contains("Generic.List"))
             {
                 var objects = (List<string>)(IEnumerable<string>)str;
                 for (int i = 0; i < objects.Count; i++)
                 {
-                    Text(x, y + TextSize(objects[i], -1, handle).Height * i, objects[i], color, handle, edgecolor, point, opacity, vertical, blend);
+                    Text(x, y + TextSize(objects[i], -1, handle).Height * i, objects[i], handle, color, edgecolor, opacity, point, blend, vertical);
                 }
             }
             else
             {
-                drawtext(x, y, str, color, handle, edgecolor, vertical, point);
+                drawtext(x, y, str, handle, color, edgecolor, point, vertical);
             }
             SetDrawBlendMode((int)BlendMode.None, 255);
         }
-        private static void drawtext(double x, double y, object? str, int color, Handle? handle, int edgecolor, bool vertical, ReferencePoint point)
+        private static void drawtext(double x, double y, object? str, Handle? handle, int color, int edgecolor, ReferencePoint point, bool vertical)
         {
             var po = TextPoint(point, str, -1, handle);
             float x1 = (float)x - po.X, y1 = (float)y - po.Y;
@@ -154,30 +154,30 @@ namespace SeaDrop
             return point;
         }
 
-        public static void Text(double x, double y, object? str, Handle? handle, int color = 0xffffff, int edgecolor = 0, bool vertical = false, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, BlendMode blend = BlendMode.None)
+        public static void Text(double x, double y, object? str, int color, Handle? handle = null, int edgecolor = 0, double opacity = 1.0, ReferencePoint point = ReferencePoint.TopLeft, BlendMode blend = BlendMode.None, bool vertical = false)
         {
-            Text(x, y, str, color, handle, edgecolor, point, opacity, vertical, blend);
+            Text(x, y, str, handle, color, edgecolor, opacity, point, blend, vertical);
         }
-        public static void Text(double x, double y, object[]? str, int color = 0xffffff, Handle? handle = null, int edgecolor = 0, bool vertical = false, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, BlendMode blend = BlendMode.None)
+        public static void Text(double x, double y, object[]? str, Handle? handle = null, int color = 0xffffff, int edgecolor = 0, double opacity = 1.0, ReferencePoint point = ReferencePoint.TopLeft, BlendMode blend = BlendMode.None, bool vertical = false)
         {
             int h = 0;
             for (int i = 0; i < str?.Length; i++)
             {
-                Text(x, y + h, str[i], color, handle, edgecolor, point, opacity, vertical, blend);
+                Text(x, y + h, str[i], color, handle, edgecolor, opacity, point, blend, vertical);
                 h += TextSize(str[i], -1, handle).Height;
             }
         }
-        public static void Text(double x, double y, List<object>? str, int color = 0xffffff, Handle? handle = null, int edgecolor = 0, bool vertical = false, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, BlendMode blend = BlendMode.None)
+        public static void Text(double x, double y, List<object>? str, Handle? handle = null, int color = 0xffffff, int edgecolor = 0, double opacity = 1.0, ReferencePoint point = ReferencePoint.TopLeft, BlendMode blend = BlendMode.None, bool vertical = false)
         {
             int h = 0;
             for (int i = 0; i < str?.Count; i++)
             {
-                Text(x, y + h, str[i], color, handle, edgecolor, point, opacity, vertical, blend);
+                Text(x, y + h, str[i], color, handle, edgecolor, opacity, point, blend, vertical);
                 h += TextSize(str[i], -1, handle).Height;
             }
         }
 
-        public static void Text(double x, double y, object? str, Texture texture, Handle? handle = null, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, BlendMode blend = BlendMode.None)
+        public static void Text(double x, double y, object? str, Texture texture, Handle? handle = null, double opacity = 1.0, ReferencePoint point = ReferencePoint.TopLeft, BlendMode blend = BlendMode.None)
         {
             var size = TextSize(str?.ToString(), -1, handle);
             var scr = MakeScreen(size.Width, size.Height, TRUE);
@@ -185,7 +185,7 @@ namespace SeaDrop
             SetBackgroundColor(0, 0, 0);
             ClearDrawScreen();
 
-            Text(0, 0, str, handle, 0xffffff, 0, false, point, opacity, blend);
+            Text(0, 0, str, handle, 0xffffff, 0);
             texture.XYScale = ((double)size.Width / texture.Width, (double)size.Height / texture.Height);
             texture.Blend = BlendMode.Multiply;
             texture.BlendDepth = 255;
@@ -193,11 +193,47 @@ namespace SeaDrop
 
             //作成したスクリーンの内容を裏画面に描画する
             SetDrawScreen(DX_SCREEN_BACK);
-            DrawGraph((int)x, (int)y, scr, TRUE);
+
+            SetDrawBlendMode((int)blend, (int)(255.0 * opacity));
+            var po = TextPoint(point, str, -1, handle);
+            float x1 = (float)x - po.X, y1 = (float)y - po.Y;
+
+            DrawGraph((int)x1, (int)y1, scr, TRUE);
 
             DeleteGraph(scr);
+            SetDrawBlendMode((int)BlendMode.None, 255);
         }
-        public static void Text(double x, double y, object? str, Color top, Color bottom, Handle? handle = null, double border = 0, double center = 0.5, ReferencePoint point = ReferencePoint.TopLeft, double opacity = 1.0, BlendMode blend = BlendMode.None)
+
+        public static void Text(double x, double y, object? str, Texture[] textures, Handle? handle = null, double opacity = 1.0, ReferencePoint point = ReferencePoint.TopLeft, BlendMode blend = BlendMode.None)
+        {
+            var size = TextSize(str?.ToString(), -1, handle);
+            var scr = MakeScreen(size.Width, size.Height, TRUE);
+            SetDrawScreen(scr);
+            SetBackgroundColor(0, 0, 0);
+            ClearDrawScreen();
+
+            Text(0, 0, str, handle, 0xffffff, 0);
+            foreach (var texture in textures)
+            {
+                texture.XYScale = ((double)size.Width / texture.Width, (double)size.Height / texture.Height);
+                texture.Blend = BlendMode.Multiply;
+                texture.BlendDepth = 255;
+                texture.Draw(0, 0);
+            }
+
+            //作成したスクリーンの内容を裏画面に描画する
+            SetDrawScreen(DX_SCREEN_BACK);
+
+            SetDrawBlendMode((int)blend, (int)(255.0 * opacity));
+            var po = TextPoint(point, str, -1, handle);
+            float x1 = (float)x - po.X, y1 = (float)y - po.Y;
+
+            DrawGraph((int)x1, (int)y1, scr, TRUE);
+
+            DeleteGraph(scr);
+            SetDrawBlendMode((int)BlendMode.None, 255);
+        }
+        public static void Text(double x, double y, object? str, Color top, Color bottom, Handle? handle = null, double border = 0, double center = 0.5, double opacity = 1.0, ReferencePoint point = ReferencePoint.TopLeft, BlendMode blend = BlendMode.None)
         {
             var size = TextSize(str?.ToString(), -1, handle);
 
@@ -216,21 +252,21 @@ namespace SeaDrop
                 SetDrawScreen(scr1);
                 SetBackgroundColor(0, 0, 0);
                 ClearDrawScreen();
-                Text(0, 0, str, handle, 0xffffff, 0, false, ReferencePoint.TopLeft, opacity, blend);
+                Text(0, 0, str, handle, 0xffffff, 0, opacity, ReferencePoint.TopLeft, blend, false);
             }
             if (scr2 > -1)
             {
                 SetDrawScreen(scr2);
                 SetBackgroundColor(0, 0, 0);
                 ClearDrawScreen();
-                Text(0, -height, str, handle, 0xffffff, 0, false, ReferencePoint.TopLeft, opacity, blend);
+                Text(0, -height, str, handle, 0xffffff, 0, opacity, ReferencePoint.TopLeft, blend, false);
             }
             if (scr3 > -1)
             {
                 SetDrawScreen(scr3);
                 SetBackgroundColor(0, 0, 0);
                 ClearDrawScreen();
-                Text(0, -height - mid, str, handle, 0xffffff, 0, false, ReferencePoint.TopLeft, opacity, blend);
+                Text(0, -height - mid, str, handle, 0xffffff, 0, opacity, ReferencePoint.TopLeft, blend, false);
             }
 
             var po = TextPoint(point, str, -1, handle);
@@ -238,6 +274,8 @@ namespace SeaDrop
 
             //作成したスクリーンの内容を裏画面に描画する
             SetDrawScreen(DX_SCREEN_BACK);
+
+            SetDrawBlendMode((int)blend, (int)(255.0 * opacity));
             Polygon(scr1, (int)x1, (int)y1, width, height, top, top, top, top);
             Polygon(scr2, (int)x1, (int)y1 + height, width, mid, top, top, bottom, bottom);
             Polygon(scr3, (int)x1, (int)y1 + size.Height - height2, width, height2, bottom, bottom, bottom, bottom);
@@ -245,6 +283,7 @@ namespace SeaDrop
             DeleteGraph(scr1);
             DeleteGraph(scr2);
             DeleteGraph(scr3);
+            SetDrawBlendMode((int)BlendMode.None, 255);
         }
         public static void Polygon(int handle, int x, int y, int width, int height, Color color1, Color color2, Color color3, Color color4)
         {
@@ -434,18 +473,18 @@ namespace SeaDrop
         public bool Italic;
         public EFontType Type;
 
-        public Handle(string fontpath, string font, int size = 16, int thick = 1, int edge = 1, bool italic = false, EFontType type = EFontType.Normal)
+        public Handle(string fontpath, string font, int size = 16, int thick = 1, int edge = 0, bool italic = false, EFontType type = EFontType.AntialiasingEdge)
         {
             AddFont(fontpath);
             Font = font;
             Set(size, thick, edge, italic, type);
         }
-        public Handle(string? font = null, int size = 16, int thick = 1, int edge = 1, bool italic = false, EFontType type = EFontType.Normal)
+        public Handle(string? font = null, int size = 16, int thick = 1, int edge = 0, bool italic = false, EFontType type = EFontType.AntialiasingEdge)
         {
             Font = GetFont(font);
             Set(size, thick, edge, italic, type);
         }
-        public Handle(int size, int thick = 1, int edge = 1, bool italic = false, EFontType type = EFontType.Normal)
+        public Handle(int size, int thick = 1, int edge = 0, bool italic = false, EFontType type = EFontType.AntialiasingEdge)
         {
             Set(size, thick, edge, italic, type);
         }

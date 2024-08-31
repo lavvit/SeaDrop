@@ -23,7 +23,6 @@ namespace SeaDrop
         public int BlendDepth = 255;
         public Color Color = Color.White;
         public Color AddColor = Color.Black;
-        public BlendMode ColorBlend = BlendMode.None;
 
         public bool TurnX, TurnY;
 
