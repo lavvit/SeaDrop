@@ -8,35 +8,35 @@ namespace TestApp
         {
             DXLib.VSync = true;
             DXLib.MultiThreading = true;
-            DXLib.Init(new Program(), 640, 480);
-            //1280, 720
+            DXLib.Init(new Program());
+            //1280, 720, 640, 480
             //
             //Shooting
             //NetTest
             //MortorTest
         }
 
-        Sound Sound = new();
+        Animation animation = new();
 
         public override void Enable()
         {
-            Input.Init();
-            Sound = new("Amazing Mirage.ogg");
-            Sound.Play();
-
+            animation = new("Anim\\Anim.txt");
             base.Enable();
         }
 
         public override void Draw()
         {
+            animation.Draw();
             Drawing.Text(400, 0, FPS.AverageValue);
             Drawing.Text(400, 20, FPS.AverageProcess);
+            Drawing.Text(100, 20, animation.Timer);
 
             base.Draw();
         }
         public override void Update()
         {
             if (Key.IsPushed(EKey.Esc)) DXLib.End();
+            if (Key.IsPushed(EKey.Space)) animation.Start();
 
             base.Update();
         }

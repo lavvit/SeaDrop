@@ -260,6 +260,16 @@ namespace SeaDrop
             uint height = ((uint)buf[4] << 24) | ((uint)buf[5] << 16) | ((uint)buf[6] << 8) | (uint)buf[7];
             return ((int)width, (int)height);
         }
+
+        public static int GetCount(string dir, string prefix = "", string ext = ".png")
+        {
+            int num = 0;
+            while (File.Exists(dir + prefix + num + ext))
+            {
+                num++;
+            }
+            return num;
+        }
     }
 
     public enum BlendMode
