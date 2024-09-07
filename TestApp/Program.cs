@@ -37,6 +37,8 @@ namespace TestApp
         {
             if (Key.IsPushed(EKey.Esc)) DXLib.End();
             if (Key.IsPushed(EKey.Space)) animation.Start();
+            if (Key.IsPushed(EKey.F5))
+                animation = new("Anim\\Anim.txt");
 
             base.Update();
         }
